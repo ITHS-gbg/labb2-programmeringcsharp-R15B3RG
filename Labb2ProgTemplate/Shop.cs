@@ -64,10 +64,11 @@ namespace Labb2ProgTemplate
 
         public void MainMenu() //Huvudmenyn för affären när man är inloggad
         {
-            Console.WriteLine("Välkommen till Tatooine Store mitt ute bland dem djupa öken sanddynerna! \nVälj mellan att logga in eller att registrera 'Ny Användare': \n"
-                              + "\n - 1. Logga in"
-                              + "\n - 2. Registrera ny användare"
-                              + "\n - 3. Avsluta");
+            Console.WriteLine(
+                "Välkommen till Tatooine Store mitt ute bland dem djupa öken sanddynerna! \nVälj mellan att logga in eller att registrera 'Ny Användare': \n"
+                + "\n - 1. Logga in"
+                + "\n - 2. Registrera ny användare"
+                + "\n - 3. Avsluta");
 
             string input;
             input = Console.ReadLine();
@@ -225,10 +226,10 @@ namespace Labb2ProgTemplate
         {
 
             Console.WriteLine($"Välkommen {CurrentCustomer.Name}! Du är nu inloggad! Välj mellan att:"
-                                                              + "\n - 1. Handla"
-                                                              + "\n - 2. Kolla kundvagnen"
-                                                              + "\n - 3. Gå till kassan"
-                                                              + "\n - 4. Mina uppgifter");
+                              + "\n - 1. Handla"
+                              + "\n - 2. Kolla kundvagnen"
+                              + "\n - 3. Gå till kassan"
+                              + "\n - 4. Mina uppgifter");
 
             string input = Console.ReadLine();
 
@@ -249,7 +250,8 @@ namespace Labb2ProgTemplate
                         Console.WriteLine($"{i + 1}. {Products[i].Name} - {Products[i].Price} peggats");
                     }
 
-                    Console.WriteLine("Välj produktnummer att lägga till i kundvagnen (0 eller ENTER för att avbryta):");
+                    Console.WriteLine(
+                        "Välj produktnummer att lägga till i kundvagnen (0 eller ENTER för att avbryta):");
                     string produktVal = Console.ReadLine();
 
                     if (int.TryParse(produktVal, out int productIndex) && productIndex >= 1 &&
@@ -259,7 +261,7 @@ namespace Labb2ProgTemplate
                             $"Ange antal av {Products[productIndex - 1].Name} att lägga till i kundvagnen:");
                         string quantityInput = Console.ReadLine();
 
-                        if (int.TryParse(quantityInput, out int quantity) && quantity > 0)
+                        if (int.TryParse(quantityInput, out int quantity) && quantity >= 0)
                         {
                             // Lägg till vald produkt och antal i kundvagnen
                             Product selectedProduct = Products[productIndex - 1];
@@ -381,10 +383,12 @@ namespace Labb2ProgTemplate
 
 
 
+
         private void ViewCart()
         {
             Console.WriteLine("Din kundvagn:");
 
+            // Om kundvagnen är tom
             List<Product> cartItems = CurrentCustomer.Cart;
 
             if (cartItems.Count == 0)
@@ -402,57 +406,53 @@ namespace Labb2ProgTemplate
                         Price = group.First().Price
                     });
 
-                // Visa innehållet i kundvagnen och hur mycket av varje produkt för sig
+                // Visa varje produkt i kundvagnen separat
                 int index = 1;
                 foreach (var groupedItem in groupedCartItems)
                 {
                     double productTotal = groupedItem.Price * groupedItem.Quantity;
-                    Console.WriteLine($"{index}. {groupedItem.ProductName} - {groupedItem.Price} peggats x {groupedItem.Quantity} = {productTotal} peggats");
+                    Console.WriteLine(
+                        $"{index}. {groupedItem.ProductName} - {groupedItem.Price} peggats x {groupedItem.Quantity} = {productTotal} peggats");
                     index++;
                 }
 
-                // Visa det totala priset av valda varor
-                double total = groupedCartItems.Sum(item => item.Price * item.Quantity);
-                Console.WriteLine($"Totalt pris: {total} peggats");
+                Console.Write("Ange numret på produkten du vill ta bort (0 eller ENTER för att fortsätta handla): ");
+
+                if (int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice > 0 && choice <= groupedCartItems.Count())
+                    {
+                        Console.Write($"Hur många av {groupedCartItems.ElementAt(choice - 1).ProductName} vill du ta bort: ");
+
+                        if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
+                        {
+                            // Ta bort det angivna antalet exemplar av produkten från kundvagnen
+                            var selectedGroup = groupedCartItems.ElementAt(choice - 1);
+                            Product selectedProduct = cartItems.First(item => item.Name == selectedGroup.ProductName);
+                            CurrentCustomer.RemoveFromCart(selectedProduct, quantity);
+
+                            Console.WriteLine($"{quantity} st {selectedProduct.Name} har tagits bort från kundvagnen.");
+                            Console.ReadKey();
+                            Console.Clear();
+                            ViewCart();
+                        }
+                    }
+                    else if (choice != 0)
+                    {
+                        Console.WriteLine("Ogiltigt val!");
+                        Console.ReadKey();
+                        Console.Clear();
+                        ViewCart();
+                    }
+                }
+                else
+                {
+                    Console.Clear();
+                    ShopMenu();
+                }
             }
-
-            Console.Write("Ange numret på produkten du vill ta bort (0 eller ENTER för att fortsätta handla): ");
-
-            int choice;
-
-            if (int.TryParse(Console.ReadLine(), out choice))
-            {
-                if (choice > 0 && choice <= cartItems.Count)
-                {
-                    // Tar bort valda produkter ut kundvagnen
-                    Product removedProduct = cartItems[choice - 1];
-                    CurrentCustomer.RemoveFromCart(removedProduct);
-                    Console.WriteLine($"1 st {removedProduct.Name} har tagits bort från kundvagnen.");
-                    Console.ReadKey();
-                    Console.Clear();
-                    ViewCart();
-                }
-                else if (choice != 0 && cartItems.Count == 0)
-                {
-                    //Om kundvagnen är tom och det ej finns varor att ta bort, så säger programmet till
-                    Console.Clear();
-                    Console.WriteLine("Din kundvagn är tom. Finns inga varor att ta bort!");
-                    Console.ReadKey();
-                }
-                else if (choice > cartItems.Count)
-                {
-                    Console.WriteLine("Ogiltigt val!");
-                    Console.ReadKey();
-                    Console.Clear();
-                    ViewCart();
-                }
-
-
-            }
-
-            Console.Clear();
-            ShopMenu();
         }
+
 
 
 
@@ -465,7 +465,8 @@ namespace Labb2ProgTemplate
 
             Console.WriteLine("Din kundvagn:");
 
-            if (cartItems.Count == 0) //Om du försöker gå till kassan med tom kundvagn, säger programmet till om detta
+            if (cartItems.Count ==
+                0) //Om du försöker gå till kassan med tom kundvagn, säger programmet till om detta
             {
                 Console.WriteLine("Din kundvagn är tom. Handla något först.");
             }
@@ -488,7 +489,8 @@ namespace Labb2ProgTemplate
                 if (checkout == "ja")
                 {
                     Console.Clear();
-                    Console.WriteLine($"Tack för att du handlade hos Tatooine Store! Du ligger nu back: {total} peggats! Have a nice day! ;)");
+                    Console.WriteLine(
+                        $"Tack för att du handlade hos Tatooine Store! Du ligger nu back: {total} peggats! Have a nice day! ;)");
                     cartItems.Clear();
                     Console.ReadKey();
                     Console.Clear();
@@ -497,6 +499,7 @@ namespace Labb2ProgTemplate
                 {
                     Console.Clear();
                 }
+
                 ShopMenu();
             }
         }
@@ -505,4 +508,5 @@ namespace Labb2ProgTemplate
     }
 
 }
+
 

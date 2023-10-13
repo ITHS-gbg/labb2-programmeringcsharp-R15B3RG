@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Labb2ProgTemplate
 {
-    public record Product
+    public record Product : IEquatable<Product>
     {
         public string Name { get; set; }
         public double Price { get; set; }

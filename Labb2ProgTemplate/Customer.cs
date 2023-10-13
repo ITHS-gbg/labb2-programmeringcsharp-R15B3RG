@@ -64,9 +64,25 @@ namespace Labb2ProgTemplate
             }
         }
 
-        public void RemoveFromCart(Product product)
+        public void RemoveFromCart(Product product, int quantity)
         {
-            _cart.Remove(product);
+            {
+                // Hitta varje instans av produkten i kundvagnen och ta bort dem
+                for (int i = 0; i < quantity; i++)
+                {
+                    Product foundProduct = _cart.FirstOrDefault(p => p.Equals(product));
+
+                    if (foundProduct != null)
+                    {
+                        _cart.Remove(foundProduct);
+                    }
+                    else
+                    {
+                        // Om produkten inte finns i kundvagnen, bryt loopen
+                        break;
+                    }
+                }
+            }
         }
 
         public double CartTotal()
@@ -79,5 +95,6 @@ namespace Labb2ProgTemplate
             return total;
         }
     }
+    
 }
 
