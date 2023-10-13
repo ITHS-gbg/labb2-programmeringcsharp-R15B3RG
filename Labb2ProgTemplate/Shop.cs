@@ -255,19 +255,25 @@ namespace Labb2ProgTemplate
                     if (int.TryParse(produktVal, out int productIndex) && productIndex >= 1 &&
                         productIndex <= Products.Count)
                     {
-                        // Lägg till vald produkt i kundvagnen
+                        Console.WriteLine(
+                            $"Ange antal av {Products[productIndex - 1].Name} att lägga till i kundvagnen:");
+                        string quantityInput = Console.ReadLine();
 
-                        Product selectedProduct = Products[productIndex - 1];
-                        CurrentCustomer.AddToCart(selectedProduct);
+                        if (int.TryParse(quantityInput, out int quantity) && quantity > 0)
+                        {
+                            // Lägg till vald produkt och antal i kundvagnen
+                            Product selectedProduct = Products[productIndex - 1];
+                            CurrentCustomer.AddToCart(selectedProduct, quantity);
 
-                        Console.Clear();
+                            Console.Clear();
 
-                        Console.WriteLine($"{selectedProduct.Name} har lagts till i kundvagnen.");
+                            Console.WriteLine($"{quantity} st av {selectedProduct.Name} har lagts till i kundvagnen.");
 
-                        Console.ReadKey();
+                            Console.ReadKey();
 
-                        Console.Clear();
+                            Console.Clear();
 
+                        }
                     }
                     // Avbryter handeln
                     else if (productIndex == 0)
@@ -296,7 +302,7 @@ namespace Labb2ProgTemplate
 
                 List<Product> cartItems = CurrentCustomer.Cart;
 
-                Console.WriteLine("\nVill du fortsätta till kassan? (Ja/Nej)"); 
+                Console.WriteLine("\nVill du fortsätta till kassan? (Ja/Nej)");
                 string checkoutChoice = Console.ReadLine().ToLower();
 
                 if (checkoutChoice == "ja")
@@ -313,7 +319,7 @@ namespace Labb2ProgTemplate
                         ShopMenu();
                     }
                 }
-                
+
                 else // Går tillbaka till huvudmenyn ifall man inte vill fortsätta till kassan
                 {
                     Console.Clear();
@@ -332,7 +338,7 @@ namespace Labb2ProgTemplate
 
                     Console.WriteLine(CurrentCustomer);
 
-                    Console.WriteLine("Vill du logga ut eller fortsätta handla?" 
+                    Console.WriteLine("Vill du logga ut eller fortsätta handla?"
                                       + "\n - 1. Logga ut"
                                       + "\n - 2. Fortsätt handla");
 
@@ -349,7 +355,7 @@ namespace Labb2ProgTemplate
                     }
                     else if (Val == "2")
                     {
-                        
+
                         Console.Clear();
                         ShopMenu();
                         break;
@@ -396,7 +402,7 @@ namespace Labb2ProgTemplate
                         Price = group.First().Price
                     });
 
-                // Visa innehållet i kundvagnen
+                // Visa innehållet i kundvagnen och hur mycket av varje produkt för sig
                 int index = 1;
                 foreach (var groupedItem in groupedCartItems)
                 {

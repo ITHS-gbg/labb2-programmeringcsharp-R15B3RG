@@ -56,9 +56,12 @@ namespace Labb2ProgTemplate
             return Password.Equals(password);
         }
 
-        public void AddToCart(Product product)
+        public void AddToCart(Product product, int quantity)
         {
-            _cart.Add(product);
+            for (int i = 0; i < quantity; i++)
+            {
+                _cart.Add(product);
+            }
         }
 
         public void RemoveFromCart(Product product)
