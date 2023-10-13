@@ -387,14 +387,26 @@ namespace Labb2ProgTemplate
             }
             else
             {
-                // Visar innehållet i kundvagnen
-                for (int i = 0; i < cartItems.Count; i++)
+                // Gruppera varor efter namn och beräkna antalet varje produkt
+                var groupedCartItems = cartItems.GroupBy(item => item.Name)
+                    .Select(group => new
+                    {
+                        ProductName = group.Key,
+                        Quantity = group.Count(),
+                        Price = group.First().Price
+                    });
+
+                // Visa innehållet i kundvagnen
+                int index = 1;
+                foreach (var groupedItem in groupedCartItems)
                 {
-                    Console.WriteLine($"{i + 1}. {cartItems[i].Name} - {cartItems[i].Price} peggats");
+                    double productTotal = groupedItem.Price * groupedItem.Quantity;
+                    Console.WriteLine($"{index}. {groupedItem.ProductName} - {groupedItem.Price} peggats x {groupedItem.Quantity} = {productTotal} peggats");
+                    index++;
                 }
 
-                // Visar det totala priser av valda varor
-                double total = cartItems.Sum(item => item.Price);
+                // Visa det totala priset av valda varor
+                double total = groupedCartItems.Sum(item => item.Price * item.Quantity);
                 Console.WriteLine($"Totalt pris: {total} peggats");
             }
 
@@ -409,7 +421,7 @@ namespace Labb2ProgTemplate
                     // Tar bort valda produkter ut kundvagnen
                     Product removedProduct = cartItems[choice - 1];
                     CurrentCustomer.RemoveFromCart(removedProduct);
-                    Console.WriteLine($"{removedProduct.Name} har tagits bort från kundvagnen.");
+                    Console.WriteLine($"1 st {removedProduct.Name} har tagits bort från kundvagnen.");
                     Console.ReadKey();
                     Console.Clear();
                     ViewCart();
