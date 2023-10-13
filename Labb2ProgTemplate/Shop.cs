@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.AccessControl;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 
 namespace Labb2ProgTemplate
 {
@@ -10,41 +17,474 @@ namespace Labb2ProgTemplate
     {
         private Customer CurrentCustomer { get; set; }
 
-        private List<Product> Products { get; set; }
+        private List<Product> Products { get; set; } = new List<Product>();
+
+        private List<Customer> customer { get; set; } = new List<Customer>();
+
+
+
 
         public Shop()
         {
-            
+
+            //Lista på produkter och användare
+
+            Product LightSaber = new Product("Light Saber", 5000);
+            Products.Add(LightSaber);
+
+            Product DoubleLightSaber = new Product("Double Light Saber", 10000);
+            Products.Add(DoubleLightSaber);
+
+            Product Blaster = new Product("Blaster", 1000);
+            Products.Add(Blaster);
+
+            Product WookieePal = new Product("Wookiee Pal", 2500);
+            Products.Add(WookieePal);
+
+            Product Fuse = new Product("Fuse", 200);
+            Products.Add(Fuse);
+
+            Customer newCustomer1 = new Customer("Luke", "123");
+
+            customer.Add(newCustomer1);
+
+            Customer newCustomer2 = new Customer("Leia", "321");
+
+            customer.Add(newCustomer2);
+
+            Customer newCustomer3 = new Customer("Han", "213");
+
+            customer.Add(newCustomer3);
         }
 
-        public void MainMenu()
+
+
+
+
+
+        public void MainMenu() //Huvudmenyn för affären när man är inloggad
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Välkommen till Tatooine Store mitt ute bland dem djupa öken sanddynerna! \nVälj mellan att logga in eller att registrera 'Ny Användare': \n"
+                              + "\n - 1. Logga in"
+                              + "\n - 2. Registrera ny användare"
+                              + "\n - 3. Avsluta");
+
+            string input;
+            input = Console.ReadLine();
+
+            while (true)
+            {
+
+                if (input == "1")
+                {
+                    Console.Clear();
+                    Login();
+                }
+                else if (input == "2")
+                {
+                    Console.Clear();
+                    Register();
+                }
+                else if (input == "3") // Avslutar programmet genom att gå ut ur applikationen
+                {
+                    Console.Clear();
+                    Environment.Exit(0);
+                }
+                else
+                {
+
+                    Console.WriteLine("Felaktigt menyval. Försök igen!");
+                    Console.ReadKey();
+                    Console.Clear();
+                    MainMenu();
+                }
+            }
         }
+
+
+
+
+
 
         private void Login()
         {
-            throw new NotImplementedException();
+
+            string Name;
+            string Password;
+
+            Console.WriteLine("Ange Ditt användarnamn:");
+
+            Name = Console.ReadLine();
+
+            Console.WriteLine("Ange Ditt lösenord:");
+
+            Password = Console.ReadLine();
+
+            Customer loggedInCustomer = customer.FirstOrDefault(c => c.Name == Name);
+
+
+            if (loggedInCustomer != null)
+            {
+                while (true)
+                {
+                    // Kontrollerar lösenordet
+                    if (loggedInCustomer.CheckPassword(Password))
+                    {
+                        Console.WriteLine("Inloggningen Lyckades!");
+                        CurrentCustomer = loggedInCustomer;
+                        Console.Clear();
+                        ShopMenu();
+
+
+                    }
+
+                    else if (!loggedInCustomer.CheckPassword(Password))
+
+                    {
+                        Console.WriteLine("Felaktigt lösenord! Försökt igen:");
+
+                        Password = Console.ReadLine();
+                    }
+
+                }
+
+
+            }
+
+            else // Säger till om den inte hittar en användare
+            {
+                Console.WriteLine("Användaren finns ej. Vänligen registrera dig först!");
+                Console.ReadKey();
+                Console.Clear();
+                MainMenu();
+            }
+
         }
 
-        private void Register()
+
+
+
+
+        private void Register() // Skapar ny användare
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Ange ett användarnamn: ");
+
+            string input = Console.ReadLine();
+
+            Console.WriteLine("Ange ett lösenord: ");
+
+            string input2 = Console.ReadLine();
+
+            Console.WriteLine("Upprepa lösenord: ");
+
+            string input3 = Console.ReadLine();
+
+            while (true)
+            {
+
+                if (input3 == input2) //Dubbelkollar ditt lösenord. Om det stämmer, skapas den nya användaren
+                {
+                    Customer newCustomer = new Customer(input, input2);
+
+                    customer.Add(newCustomer);
+
+                    Console.Clear();
+
+                    Console.WriteLine("Ny användare skapad:"
+                                      + "\n" + newCustomer.Name);
+
+                    Console.ReadKey();
+
+                    Console.Clear();
+
+                    MainMenu();
+
+                    break;
+
+                }
+                else if (input3 != input2)
+                {
+                    Console.Clear();
+
+                    Console.WriteLine("Fel lösenord! Försök igen!");
+
+                    input3 = Console.ReadLine();
+
+                }
+
+            }
+
         }
 
-        private void ShopMenu() 
+
+
+
+
+
+        private void ShopMenu()
         {
-            throw new NotImplementedException();
+
+            Console.WriteLine($"Välkommen {CurrentCustomer.Name}! Du är nu inloggad! Välj mellan att:"
+                                                              + "\n - 1. Handla"
+                                                              + "\n - 2. Kolla kundvagnen"
+                                                              + "\n - 3. Gå till kassan"
+                                                              + "\n - 4. Mina uppgifter");
+
+            string input = Console.ReadLine();
+
+            if (input == "1") // Väljer att handla/ gå till varor i affären
+            {
+
+                Console.Clear();
+
+                while (true)
+                {
+
+                    Console.WriteLine("Produkter tillgängliga i affären:");
+
+                    // Visar listan av varor/produkter med pris
+
+                    for (int i = 0; i < Products.Count; i++)
+                    {
+                        Console.WriteLine($"{i + 1}. {Products[i].Name} - {Products[i].Price} peggats");
+                    }
+
+                    Console.WriteLine("Välj produktnummer att lägga till i kundvagnen (0 eller ENTER för att avbryta):");
+                    string produktVal = Console.ReadLine();
+
+                    if (int.TryParse(produktVal, out int productIndex) && productIndex >= 1 &&
+                        productIndex <= Products.Count)
+                    {
+                        // Lägg till vald produkt i kundvagnen
+
+                        Product selectedProduct = Products[productIndex - 1];
+                        CurrentCustomer.AddToCart(selectedProduct);
+
+                        Console.Clear();
+
+                        Console.WriteLine($"{selectedProduct.Name} har lagts till i kundvagnen.");
+
+                        Console.ReadKey();
+
+                        Console.Clear();
+
+                    }
+                    // Avbryter handeln
+                    else if (productIndex == 0)
+                    {
+                        Console.WriteLine("Handeln avbruten.");
+                        Console.Clear();
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Felaktigt val. Försök igen!");
+                        Console.Clear();
+                    }
+                }
+            }
+
+            else if (input == "2") // Väljer att kolla i och/eller justera kundvagnen
+            {
+                Console.Clear();
+                ViewCart();
+            }
+
+            else if (input == "3") // Går till kassan
+            {
+                Console.Clear();
+
+                List<Product> cartItems = CurrentCustomer.Cart;
+
+                Console.WriteLine("\nVill du fortsätta till kassan? (Ja/Nej)"); 
+                string checkoutChoice = Console.ReadLine().ToLower();
+
+                if (checkoutChoice == "ja")
+                {
+                    if (cartItems.Count > 0) // Kollar din kundvagn innan du går vidare till kassan
+                    {
+                        Checkout();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Din kundvagn är tom.");
+                        Console.ReadKey();
+                        Console.Clear();
+                        ShopMenu();
+                    }
+                }
+                
+                else // Går tillbaka till huvudmenyn ifall man inte vill fortsätta till kassan
+                {
+                    Console.Clear();
+                    ShopMenu();
+                }
+            }
+
+            else if (input == "4") //Här loggar man ut ur affären
+            {
+
+                while (true)
+                {
+                    Console.Clear();
+
+                    string customerInfo = CurrentCustomer.ToString();
+
+                    Console.WriteLine(CurrentCustomer);
+
+                    Console.WriteLine("Vill du logga ut eller fortsätta handla?" 
+                                      + "\n - 1. Logga ut"
+                                      + "\n - 2. Fortsätt handla");
+
+                    string Val = Console.ReadLine();
+
+                    if (Val == "1")
+                    {
+                        CurrentCustomer = null;
+                        Console.WriteLine("Du har loggats ut.");
+                        Console.ReadLine();
+                        Console.Clear();
+                        MainMenu();
+                        break;
+                    }
+                    else if (Val == "2")
+                    {
+                        
+                        Console.Clear();
+                        ShopMenu();
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Felaktigt Menyval.");
+                        Console.ReadKey();
+                    }
+                }
+            }
+
+            else
+            {
+                Console.WriteLine("Felaktigt Menyval. Försök igen!");
+                Console.ReadLine();
+            }
+
         }
+
+
+
+
+
 
         private void ViewCart()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Din kundvagn:");
+
+            List<Product> cartItems = CurrentCustomer.Cart;
+
+            if (cartItems.Count == 0)
+            {
+                Console.WriteLine("Din kundvagn är tom.");
+            }
+            else
+            {
+                // Visar innehållet i kundvagnen
+                for (int i = 0; i < cartItems.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {cartItems[i].Name} - {cartItems[i].Price} peggats");
+                }
+
+                // Visar det totala priser av valda varor
+                double total = cartItems.Sum(item => item.Price);
+                Console.WriteLine($"Totalt pris: {total} peggats");
+            }
+
+            Console.Write("Ange numret på produkten du vill ta bort (0 eller ENTER för att fortsätta handla): ");
+
+            int choice;
+
+            if (int.TryParse(Console.ReadLine(), out choice))
+            {
+                if (choice > 0 && choice <= cartItems.Count)
+                {
+                    // Tar bort valda produkter ut kundvagnen
+                    Product removedProduct = cartItems[choice - 1];
+                    CurrentCustomer.RemoveFromCart(removedProduct);
+                    Console.WriteLine($"{removedProduct.Name} har tagits bort från kundvagnen.");
+                    Console.ReadKey();
+                    Console.Clear();
+                    ViewCart();
+                }
+                else if (choice != 0 && cartItems.Count == 0)
+                {
+                    //Om kundvagnen är tom och det ej finns varor att ta bort, så säger programmet till
+                    Console.Clear();
+                    Console.WriteLine("Din kundvagn är tom. Finns inga varor att ta bort!");
+                    Console.ReadKey();
+                }
+                else if (choice > cartItems.Count)
+                {
+                    Console.WriteLine("Ogiltigt val!");
+                    Console.ReadKey();
+                    Console.Clear();
+                    ViewCart();
+                }
+
+
+            }
+
+            Console.Clear();
+            ShopMenu();
         }
+
+
+
+
+
 
         private void Checkout()
         {
-            throw new NotImplementedException();
+            List<Product> cartItems = CurrentCustomer.Cart;
+
+            Console.WriteLine("Din kundvagn:");
+
+            if (cartItems.Count == 0) //Om du försöker gå till kassan med tom kundvagn, säger programmet till om detta
+            {
+                Console.WriteLine("Din kundvagn är tom. Handla något först.");
+            }
+            else
+            {
+                // Visar totala antalet produkter i kundvagnen
+                for (int i = 0; i < cartItems.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {cartItems[i].Name} - {cartItems[i].Price} peggats");
+                }
+
+                // Räknar ut det toala priset för varorna i kundvagnen
+                double total = cartItems.Sum(item => item.Price);
+
+                Console.WriteLine($"Totalt pris: {total} peggats");
+
+                Console.WriteLine("Vill du fortsätta till betalningen?(Ja/Nej)");
+                string checkout = Console.ReadLine().ToLower();
+
+                if (checkout == "ja")
+                {
+                    Console.Clear();
+                    Console.WriteLine($"Tack för att du handlade hos Tatooine Store! Du ligger nu back: {total} peggats! Have a nice day! ;)");
+                    cartItems.Clear();
+                    Console.ReadKey();
+                    Console.Clear();
+                }
+                else
+                {
+                    Console.Clear();
+                }
+                ShopMenu();
+            }
         }
+
+
     }
+
 }
+

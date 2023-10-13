@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,34 @@ namespace Labb2ProgTemplate
 {
     public class Customer
     {
+
+
+
+
+        public override string ToString() 
+        {
+
+            //Sparar användarens värden genom en stringbuilder
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine($"Namn: {Name}");
+            stringBuilder.AppendLine($"Lösenord: {Password}");
+
+            stringBuilder.AppendLine("Kundvagn:");
+            foreach (Product product in _cart)
+            {
+                stringBuilder.AppendLine($"- {product.Name} ({product.Price} peggats)");
+            }
+
+            stringBuilder.AppendLine($"Totalt pris i kundvagnen: {CartTotal()} peggats");
+
+            return stringBuilder.ToString();
+        }
+
+
+
+
         public string Name { get; private set; }
 
         private string Password { get; set; }
@@ -24,22 +53,28 @@ namespace Labb2ProgTemplate
 
         public bool CheckPassword(string password)
         {
-            throw new NotImplementedException();
+            return Password.Equals(password);
         }
 
         public void AddToCart(Product product)
         {
-            throw new NotImplementedException();
+            _cart.Add(product);
         }
 
-        public void RemoveFromCart(Product product) 
+        public void RemoveFromCart(Product product)
         {
-            throw new NotImplementedException();
+            _cart.Remove(product);
         }
-        
+
         public double CartTotal()
         {
-            throw new NotImplementedException();
+            double total = 0;
+            foreach (Product product in _cart)
+            {
+                total += product.Price;
+            }
+            return total;
         }
     }
 }
+
