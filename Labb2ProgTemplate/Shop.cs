@@ -192,7 +192,7 @@ namespace Labb2ProgTemplate
                     Console.Clear();
 
                     Console.WriteLine("Ny användare skapad:"
-                                      + "\n" + newCustomer.Name);
+                                      + "\n" + newCustomer);
 
                     Console.ReadKey();
 
@@ -391,67 +391,74 @@ namespace Labb2ProgTemplate
             // Om kundvagnen är tom
             List<Product> cartItems = CurrentCustomer.Cart;
 
-            if (cartItems.Count == 0)
+            // Gruppera varor efter namn och beräkna antalet varje produkt
+            var groupedCartItems = cartItems.GroupBy(item => item.Name)
+                .Select(group => new
+                {
+                    ProductName = group.Key,
+                    Quantity = group.Count(),
+                    Price = group.First().Price
+                });
+
+            // Visa varje produkt i kundvagnen separat
+            int index = 1;
+            double totalCartPrice = 0;
+
+            foreach (var groupedItem in groupedCartItems)
             {
-                Console.WriteLine("Din kundvagn är tom.");
+                double productTotal = groupedItem.Price * groupedItem.Quantity;
+                totalCartPrice += productTotal;
+                Console.WriteLine(
+                    $"{index}. {groupedItem.ProductName} - x {groupedItem.Quantity} {groupedItem.Price} peggats = {productTotal} peggats");
+                index++;
+
             }
-            else
+
+            Console.WriteLine("---------------------------------------------------------");
+            Console.WriteLine($"Totalt pris för kundvagnen: {totalCartPrice} peggats");
+            Console.WriteLine("---------------------------------------------------------");
+            Console.Write("Ange numret på produkten du vill ta bort (0 eller ENTER för att fortsätta handla): ");
+
+            if (int.TryParse(Console.ReadLine(), out int choice))
             {
-                // Gruppera varor efter namn och beräkna antalet varje produkt
-                var groupedCartItems = cartItems.GroupBy(item => item.Name)
-                    .Select(group => new
-                    {
-                        ProductName = group.Key,
-                        Quantity = group.Count(),
-                        Price = group.First().Price
-                    });
-
-                // Visa varje produkt i kundvagnen separat
-                int index = 1;
-                foreach (var groupedItem in groupedCartItems)
+                if (choice > 0 && choice <= groupedCartItems.Count())
                 {
-                    double productTotal = groupedItem.Price * groupedItem.Quantity;
-                    Console.WriteLine(
-                        $"{index}. {groupedItem.ProductName} - {groupedItem.Price} peggats x {groupedItem.Quantity} = {productTotal} peggats");
-                    index++;
-                }
+                    Console.Write($"Hur många av {groupedCartItems.ElementAt(choice - 1).ProductName} vill du ta bort: ");
 
-                Console.Write("Ange numret på produkten du vill ta bort (0 eller ENTER för att fortsätta handla): ");
-
-                if (int.TryParse(Console.ReadLine(), out int choice))
-                {
-                    if (choice > 0 && choice <= groupedCartItems.Count())
+                    if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
                     {
-                        Console.Write($"Hur många av {groupedCartItems.ElementAt(choice - 1).ProductName} vill du ta bort: ");
+                        // Ta bort det angivna antalet exemplar av produkten från kundvagnen
+                        var selectedGroup = groupedCartItems.ElementAt(choice - 1);
+                        Product selectedProduct = cartItems.First(item => item.Name == selectedGroup.ProductName);
+                        CurrentCustomer.RemoveFromCart(selectedProduct, quantity);
 
-                        if (int.TryParse(Console.ReadLine(), out int quantity) && quantity > 0)
-                        {
-                            // Ta bort det angivna antalet exemplar av produkten från kundvagnen
-                            var selectedGroup = groupedCartItems.ElementAt(choice - 1);
-                            Product selectedProduct = cartItems.First(item => item.Name == selectedGroup.ProductName);
-                            CurrentCustomer.RemoveFromCart(selectedProduct, quantity);
-
-                            Console.WriteLine($"{quantity} st {selectedProduct.Name} har tagits bort från kundvagnen.");
-                            Console.ReadKey();
-                            Console.Clear();
-                            ViewCart();
-                        }
-                    }
-                    else if (choice != 0)
-                    {
-                        Console.WriteLine("Ogiltigt val!");
+                        Console.WriteLine($"{quantity} st {selectedProduct.Name} har tagits bort från kundvagnen.");
                         Console.ReadKey();
                         Console.Clear();
                         ViewCart();
                     }
                 }
-                else
+                else if (choice != 0)
                 {
+                    Console.WriteLine("Ogiltigt val!");
+                    Console.ReadKey();
                     Console.Clear();
-                    ShopMenu();
+                    ViewCart();
                 }
             }
+            else
+            {
+                Console.WriteLine("Din kundvagn är tom.");
+                Console.WriteLine("---------------------------------------------------------");
+                Console.WriteLine($"Totalt pris för kundvagnen: 0 peggats");
+                Console.WriteLine("---------------------------------------------------------");
+            }
+
+            Console.Clear();
+            ShopMenu();
+
         }
+
 
 
 
@@ -465,32 +472,45 @@ namespace Labb2ProgTemplate
 
             Console.WriteLine("Din kundvagn:");
 
-            if (cartItems.Count ==
-                0) //Om du försöker gå till kassan med tom kundvagn, säger programmet till om detta
+            if (cartItems.Count == 0)
             {
                 Console.WriteLine("Din kundvagn är tom. Handla något först.");
             }
             else
             {
-                // Visar totala antalet produkter i kundvagnen
-                for (int i = 0; i < cartItems.Count; i++)
+                // Gruppera varor efter namn och beräkna antalet varje produkt
+                var groupedCartItems = cartItems.GroupBy(item => item.Name)
+                    .Select(group => new
+                    {
+                        ProductName = group.Key,
+                        Quantity = group.Count(),
+                        Price = group.First().Price
+                    });
+
+                // Visa varje produkt i kundvagnen separat och beräkna det totala priset
+                int index = 1;
+                double totalCartPrice = 0;
+
+                foreach (var groupedItem in groupedCartItems)
                 {
-                    Console.WriteLine($"{i + 1}. {cartItems[i].Name} - {cartItems[i].Price} peggats");
+                    double productTotal = groupedItem.Price * groupedItem.Quantity;
+                    totalCartPrice += productTotal;
+
+                    Console.WriteLine(
+                        $"{index}. {groupedItem.ProductName} - x {groupedItem.Quantity} {groupedItem.Price} peggats = {productTotal} peggats");
+                    index++;
                 }
 
-                // Räknar ut det toala priset för varorna i kundvagnen
-                double total = cartItems.Sum(item => item.Price);
+                Console.WriteLine("---------------------------------------------------------");
+                Console.WriteLine($"Totalt pris för kundvagnen: {totalCartPrice} peggats");
 
-                Console.WriteLine($"Totalt pris: {total} peggats");
-
-                Console.WriteLine("Vill du fortsätta till betalningen?(Ja/Nej)");
+                Console.WriteLine("Vill du fortsätta till betalningen? (Ja/Nej)");
                 string checkout = Console.ReadLine().ToLower();
 
                 if (checkout == "ja")
                 {
                     Console.Clear();
-                    Console.WriteLine(
-                        $"Tack för att du handlade hos Tatooine Store! Du ligger nu back: {total} peggats! Have a nice day! ;)");
+                    Console.WriteLine($"Tack för att du handlade hos Tatooine Store! Du ligger nu back: {totalCartPrice} peggats! Have a nice day! ;)");
                     cartItems.Clear();
                     Console.ReadKey();
                     Console.Clear();
